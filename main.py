@@ -1,10 +1,11 @@
 import pygame
+from random import random
 
 # SETTINGS
 BLOCK_SIZE = 18  # Board Block Size
 BLOCK_HORIZONTAL = 28  # Board Width in Blocks
 BLOCK_VERTICAL = 20  # Board Height in Blocks
-FONT_SIZE = 40  # Score Text Size
+FONT_SIZE = 25  # Score Text Size
 BORDER = 30  # Border Around Game Board
 
 BOARD_WIDTH = BLOCK_HORIZONTAL * BLOCK_SIZE
@@ -44,6 +45,10 @@ class Snake:
         self.path = LinkedList()
         self.path.head = Node([start_x, start_y])
         self.path.tail = self.path.head
+        self.matrix_location = [[0 for i in range(BLOCK_VERTICAL + 1)] for j in range(BLOCK_HORIZONTAL + 1)]
+        print(len(self.matrix_location[0]))
+        print(len(self.matrix_location))
+        self.matrix_location[start_x][start_y] = 1
         self.length = 0
         self.cherry = [start_x + 5, start_y + 5]
         self.extend = 0
@@ -57,15 +62,27 @@ class Snake:
         if direction == "U":
             self.path.tail.next = Node([coord[0], coord[1] - 1])
             self.path.tail = self.path.tail.next
+            if self.end_game(self.path.tail.data):
+                return False
+            self.matrix_location[coord[0]][coord[1] - 1] = 1  # check if already 1 => end game
         elif direction == "D":
             self.path.tail.next = Node([coord[0], coord[1] + 1])
             self.path.tail = self.path.tail.next
+            if self.end_game(self.path.tail.data):
+                return False
+            self.matrix_location[coord[0]][coord[1] + 1] = 1
         elif direction == "L":
             self.path.tail.next = Node([coord[0] - 1, coord[1]])
             self.path.tail = self.path.tail.next
+            if self.end_game(self.path.tail.data):
+                return False
+            self.matrix_location[coord[0] - 1][coord[1]] = 1
         elif direction == "R":
             self.path.tail.next = Node([coord[0] + 1, coord[1]])
             self.path.tail = self.path.tail.next
+            if self.end_game(self.path.tail.data):
+                return False
+            self.matrix_location[coord[0] + 1][coord[1]] = 1
         else:
             print("Invalid Direction")
 
@@ -75,6 +92,7 @@ class Snake:
             self.eat()
 
         if self.extend == 0:
+            self.matrix_location[self.path.head.data[0]][self.path.head.data[1]] = 0
             temp = self.path.head.next
             self.path.head = None
             self.path.head = temp
@@ -90,16 +108,41 @@ class Snake:
             pygame.draw.rect(window, (0, 0, 0), (convert[0], convert[1], BLOCK_SIZE, BLOCK_SIZE))
             curr = curr.next
 
+        return True
+
+    def end_game(self, coord):
+        if coord[0] < 0 or coord[0] >= BLOCK_HORIZONTAL or coord[1] < 0 or coord[1] >= BLOCK_VERTICAL:
+            return True
+        elif self.matrix_location[coord[0]][coord[1]] == 1:
+            return True
+        return False
+
     def get_length(self):
         return self.length
 
     def eat(self):
-        self.extend += 1
+        self.extend += 4
         self.length += 1
+        self.spawn_cherry()
 
-    def random_spawn(self):
-        x_coord
-        y_coord
+    def spawn_cherry(self):
+        rand_x = int(random() * BLOCK_HORIZONTAL)
+        rand_y = int(random() * BLOCK_VERTICAL)
+        print(rand_x)
+        print(rand_y)
+        while not self.is_open(rand_x, rand_y):
+            rand_x = int(random() * BLOCK_HORIZONTAL)
+            rand_y = int(random() * BLOCK_VERTICAL)
+            print(rand_x)
+            print(rand_y)
+        self.cherry = [rand_x, rand_y]
+
+    def is_open(self, x, y):
+        print("x: " + str(x))
+        print("y: " + str(y))
+        if self.matrix_location[x][y] == 0:
+            return True
+        return False
 
 
 def draw_screen(score):
@@ -199,9 +242,22 @@ def main():
             speed_limiter = SPEED_LIMIT
             lock_direction = False
             draw_screen(snake.get_length() * 25)
-            snake.move(direction)
+            if not snake.move(direction):
+                break
             draw_grid()
             pygame.display.update()
+
+    quit_game = False
+    while not quit_game:
+        clock.tick(fps)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                quit_game = True
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    main()
+                elif event.key == pygame.K_ESCAPE:
+                    quit_game = True
 
 
 main()
