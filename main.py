@@ -33,7 +33,7 @@ class LinkedList:
         self.tail = None
 
 
-def pixels(coord):
+def convert_to_pixels(coord):
     horizontal = coord[0] * BLOCK_SIZE + BORDER
     vertical = coord[1] * BLOCK_SIZE + BORDER
     return [horizontal, vertical]
@@ -46,10 +46,10 @@ class Snake:
         self.path.tail = self.path.head
         self.length = 0
         self.cherry = [start_x + 5, start_y + 5]
-        self.extend = 10
+        self.extend = 0
 
     def start(self):
-        convert = pixels(self.path.tail.data)
+        convert = convert_to_pixels(self.path.tail.data)
         pygame.draw.rect(window, (0, 0, 0), (convert[0], convert[1], BLOCK_SIZE, BLOCK_SIZE))
 
     def move(self, direction):
@@ -81,11 +81,17 @@ class Snake:
         else:
             self.extend -= 1
 
+        convert = convert_to_pixels(self.cherry)
+        pygame.draw.rect(window, (209, 35, 23), (convert[0], convert[1], BLOCK_SIZE, BLOCK_SIZE))
+
         curr = self.path.head
         while curr is not None:
-            convert = pixels(curr.data)
+            convert = convert_to_pixels(curr.data)
             pygame.draw.rect(window, (0, 0, 0), (convert[0], convert[1], BLOCK_SIZE, BLOCK_SIZE))
             curr = curr.next
+
+    def get_length(self):
+        return self.length
 
     def eat(self):
         self.extend += 1
@@ -159,7 +165,9 @@ def main():
         draw_grid()
         pygame.display.update()
 
-    frame_limiter = 4
+    SPEED_LIMIT = 4
+    speed_limiter = SPEED_LIMIT
+    lock_direction = False
     while run:
         clock.tick(fps)
 
@@ -167,23 +175,30 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
             elif event.type == pygame.KEYDOWN:
+                if lock_direction:
+                    break
                 if event.key == pygame.K_UP and direction != "D":
                     direction = "U"
+                    lock_direction = True
                     print(direction)
                 elif event.key == pygame.K_DOWN and direction != "U":
                     direction = "D"
+                    lock_direction = True
                     print(direction)
                 elif event.key == pygame.K_LEFT and direction != "R":
                     direction = "L"
+                    lock_direction = True
                     print(direction)
                 elif event.key == pygame.K_RIGHT and direction != "L":
                     direction = "R"
+                    lock_direction = True
                     print(direction)
-        if frame_limiter > 0:
-            frame_limiter -= 1
+        if speed_limiter > 0:
+            speed_limiter -= 1
         else:
-            frame_limiter = 4
-            draw_screen(score)
+            speed_limiter = SPEED_LIMIT
+            lock_direction = False
+            draw_screen(snake.get_length() * 25)
             snake.move(direction)
             draw_grid()
             pygame.display.update()
