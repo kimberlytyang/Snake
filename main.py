@@ -2,7 +2,7 @@ import pygame
 from random import random
 
 # SETTINGS
-BLOCK_SIZE = 35  # Board Block Size
+BLOCK_SIZE = 30  # Board Block Size
 BLOCK_HORIZONTAL = 28  # Board Width in Blocks
 BLOCK_VERTICAL = 20  # Board Height in Blocks
 BORDER = 40  # Border Around Game Board
@@ -73,7 +73,7 @@ class Snake:
             self.path.tail = self.path.tail.next
             if self.end_game(self.path.tail.data):
                 return False
-            self.matrix_location[coord[0]][coord[1] - 1] = 1  # check if already 1 => end game
+            self.matrix_location[coord[0]][coord[1] - 1] = 1
         elif direction == "D":
             self.path.tail.next = Node([coord[0], coord[1] + 1])
             self.path.tail = self.path.tail.next
