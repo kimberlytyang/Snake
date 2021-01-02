@@ -52,13 +52,21 @@ class Snake:
         self.length = 0
         self.cherry = [-1, -1]
         self.spawn_cherry()
-        self.extend = 0
+        self.extend = 3
 
     def start(self):
         convert = convert_to_pixels(self.path.tail.data)
         pygame.draw.rect(window, (0, 0, 0), (convert[0], convert[1], BLOCK_SIZE, BLOCK_SIZE))
 
     def move(self, direction):
+        if self.extend == 0:
+            self.matrix_location[self.path.head.data[0]][self.path.head.data[1]] = 0
+            temp = self.path.head.next
+            self.path.head = None
+            self.path.head = temp
+        else:
+            self.extend -= 1
+
         coord = self.path.tail.data
         if direction == "U":
             self.path.tail.next = Node([coord[0], coord[1] - 1])
@@ -91,14 +99,6 @@ class Snake:
         coord_cherry = self.cherry
         if coord[0] == coord_cherry[0] and coord[1] == coord_cherry[1]:
             self.eat()
-
-        if self.extend == 0:
-            self.matrix_location[self.path.head.data[0]][self.path.head.data[1]] = 0
-            temp = self.path.head.next
-            self.path.head = None
-            self.path.head = temp
-        else:
-            self.extend -= 1
 
         draw_screen(self.length * 25)
 
