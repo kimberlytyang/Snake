@@ -13,12 +13,3 @@
 
 ## Gameplay Demo
 ![demo](res/demo.gif)
-
-## Download
-* Open `main.exe` in this repository and click download
-* If Windows Defender rejects the file:
-    * Create a new folder
-    * Open `Windows Defender settings -> Virus & threat protection -> Virus & threat protection settings`
-    * Under `Exclusions`, add the folder you created
-    * Clone this repository into the folder
-* Run the `main.exe` file
