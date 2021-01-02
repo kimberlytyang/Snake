@@ -2,22 +2,24 @@ import pygame
 from random import random
 
 # SETTINGS
-BLOCK_SIZE = 18  # Board Block Size
+BLOCK_SIZE = 35  # Board Block Size
 BLOCK_HORIZONTAL = 28  # Board Width in Blocks
 BLOCK_VERTICAL = 20  # Board Height in Blocks
-FONT_SIZE = 25  # Score Text Size
-BORDER = 30  # Border Around Game Board
+BORDER = 40  # Border Around Game Board
+WINDOW_COLOR = [160, 173, 158]
+
+pygame.font.init()
+FONT_SIZE = int(BLOCK_SIZE * 1.5)
+text = pygame.font.SysFont("Courier", FONT_SIZE)
+FONT_SIZE_2 = BLOCK_SIZE
+result_text = pygame.font.SysFont("Courier", FONT_SIZE_2)
 
 BOARD_WIDTH = BLOCK_HORIZONTAL * BLOCK_SIZE
 BOARD_HEIGHT = BLOCK_VERTICAL * BLOCK_SIZE
 
 WIDTH = BOARD_WIDTH + 2 * BORDER
-HEIGHT = BOARD_HEIGHT + 2 * BORDER + FONT_SIZE
+HEIGHT = BOARD_HEIGHT + 2 * BORDER + 2 * FONT_SIZE
 
-WINDOW_COLOR = [160, 173, 158]
-
-pygame.font.init()
-text = pygame.font.SysFont("Courier", FONT_SIZE)
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Snake =====(  :)~")
 
@@ -36,7 +38,7 @@ class LinkedList:
 
 def convert_to_pixels(coord):
     horizontal = coord[0] * BLOCK_SIZE + BORDER
-    vertical = coord[1] * BLOCK_SIZE + BORDER
+    vertical = coord[1] * BLOCK_SIZE + BORDER + FONT_SIZE
     return [horizontal, vertical]
 
 
@@ -46,11 +48,10 @@ class Snake:
         self.path.head = Node([start_x, start_y])
         self.path.tail = self.path.head
         self.matrix_location = [[0 for i in range(BLOCK_VERTICAL + 1)] for j in range(BLOCK_HORIZONTAL + 1)]
-        print(len(self.matrix_location[0]))
-        print(len(self.matrix_location))
         self.matrix_location[start_x][start_y] = 1
         self.length = 0
-        self.cherry = [start_x + 5, start_y + 5]
+        self.cherry = [-1, -1]
+        self.spawn_cherry()
         self.extend = 0
 
     def start(self):
@@ -99,6 +100,8 @@ class Snake:
         else:
             self.extend -= 1
 
+        draw_screen(self.length * 25)
+
         convert = convert_to_pixels(self.cherry)
         pygame.draw.rect(window, (209, 35, 23), (convert[0], convert[1], BLOCK_SIZE, BLOCK_SIZE))
 
@@ -107,6 +110,8 @@ class Snake:
             convert = convert_to_pixels(curr.data)
             pygame.draw.rect(window, (0, 0, 0), (convert[0], convert[1], BLOCK_SIZE, BLOCK_SIZE))
             curr = curr.next
+
+        draw_grid()
 
         return True
 
@@ -117,29 +122,22 @@ class Snake:
             return True
         return False
 
-    def get_length(self):
-        return self.length
-
     def eat(self):
         self.extend += 4
-        self.length += 1
+        self.length += 4
         self.spawn_cherry()
 
     def spawn_cherry(self):
         rand_x = int(random() * BLOCK_HORIZONTAL)
         rand_y = int(random() * BLOCK_VERTICAL)
-        print(rand_x)
-        print(rand_y)
         while not self.is_open(rand_x, rand_y):
             rand_x = int(random() * BLOCK_HORIZONTAL)
             rand_y = int(random() * BLOCK_VERTICAL)
-            print(rand_x)
-            print(rand_y)
         self.cherry = [rand_x, rand_y]
 
     def is_open(self, x, y):
-        print("x: " + str(x))
-        print("y: " + str(y))
+        if self.length >= BLOCK_HORIZONTAL * BLOCK_VERTICAL - 2:
+            return True
         if self.matrix_location[x][y] == 0:
             return True
         return False
@@ -147,6 +145,8 @@ class Snake:
 
 def draw_screen(score):
     window.fill(WINDOW_COLOR)
+    title = text.render("Snake", 1, (0, 0, 0))
+    window.blit(title, (BORDER, BORDER / 2))
     score_display = text.render("Score: " + str(score), 1, (0, 0, 0))
     window.blit(score_display, (BORDER, HEIGHT - (BORDER / 2) - FONT_SIZE))
 
@@ -155,10 +155,15 @@ def draw_grid():
     num_blocks_vertical = int(BOARD_HEIGHT / BLOCK_SIZE)
     num_blocks_horizontal = int(BOARD_WIDTH / BLOCK_SIZE)
     for i in range(num_blocks_vertical - 1):
-        pygame.draw.line(window, (139, 150, 137), (BORDER, BORDER + BLOCK_SIZE * (i + 1)), (BORDER + BOARD_WIDTH, BORDER + BLOCK_SIZE * (i + 1)))
+        pygame.draw.line(window, (139, 150, 137), (BORDER, BORDER + FONT_SIZE + BLOCK_SIZE * (i + 1)), (BORDER + BOARD_WIDTH, BORDER + FONT_SIZE + BLOCK_SIZE * (i + 1)))
     for i in range(num_blocks_horizontal - 1):
-        pygame.draw.line(window, (139, 150, 137), (BORDER + BLOCK_SIZE * (i + 1), BORDER), (BORDER + BLOCK_SIZE * (i + 1), BORDER + BOARD_HEIGHT))
-    pygame.draw.rect(window, (0, 0, 0), (BORDER, BORDER, BOARD_WIDTH, BOARD_HEIGHT), 1)
+        pygame.draw.line(window, (139, 150, 137), (BORDER + BLOCK_SIZE * (i + 1), BORDER + FONT_SIZE), (BORDER + BLOCK_SIZE * (i + 1), BORDER + FONT_SIZE + BOARD_HEIGHT))
+    pygame.draw.rect(window, (0, 0, 0), (BORDER, BORDER + FONT_SIZE, BOARD_WIDTH, BOARD_HEIGHT), 1)
+
+
+def draw_options():
+    options = result_text.render("Restart: ENTER / Quit: ESC", 1, (0, 0, 0))
+    window.blit(options, (WIDTH - BORDER - (16 * FONT_SIZE_2), (BORDER + FONT_SIZE) / 2 - (FONT_SIZE_2 / 2)))
 
 
 def main():
@@ -167,7 +172,9 @@ def main():
     score = 0
     clock = pygame.time.Clock()
 
-    snake = Snake(1, 1)
+    board_middle_x = int(BLOCK_HORIZONTAL / 2)
+    board_middle_y = int(BLOCK_VERTICAL / 2)
+    snake = Snake(board_middle_x, board_middle_y)
     snake.start()
 
     global direction
@@ -183,19 +190,15 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     direction = "U"
-                    print(direction)
                     started = True
                 elif event.key == pygame.K_DOWN:
                     direction = "D"
-                    print(direction)
                     started = True
                 elif event.key == pygame.K_LEFT:
                     direction = "L"
-                    print(direction)
                     started = True
                 elif event.key == pygame.K_RIGHT:
                     direction = "R"
-                    print(direction)
                     started = True
         if started:
             draw_screen(score)
@@ -223,33 +226,29 @@ def main():
                 if event.key == pygame.K_UP and direction != "D":
                     direction = "U"
                     lock_direction = True
-                    print(direction)
                 elif event.key == pygame.K_DOWN and direction != "U":
                     direction = "D"
                     lock_direction = True
-                    print(direction)
                 elif event.key == pygame.K_LEFT and direction != "R":
                     direction = "L"
                     lock_direction = True
-                    print(direction)
                 elif event.key == pygame.K_RIGHT and direction != "L":
                     direction = "R"
                     lock_direction = True
-                    print(direction)
         if speed_limiter > 0:
             speed_limiter -= 1
         else:
             speed_limiter = SPEED_LIMIT
             lock_direction = False
-            draw_screen(snake.get_length() * 25)
             if not snake.move(direction):
-                break
-            draw_grid()
+                run = False
+                draw_options()
             pygame.display.update()
 
     quit_game = False
     while not quit_game:
         clock.tick(fps)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 quit_game = True
