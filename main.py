@@ -188,16 +188,16 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
+                if event.key == pygame.K_UP or event.key == pygame.K_w:
                     direction = "U"
                     started = True
-                elif event.key == pygame.K_DOWN:
+                elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
                     direction = "D"
                     started = True
-                elif event.key == pygame.K_LEFT:
+                elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
                     direction = "L"
                     started = True
-                elif event.key == pygame.K_RIGHT:
+                elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
                     direction = "R"
                     started = True
         if started:
@@ -223,16 +223,16 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if lock_direction:
                     break
-                if event.key == pygame.K_UP and direction != "D":
+                if (event.key == pygame.K_UP or event.key == pygame.K_w) and direction != "D":
                     direction = "U"
                     lock_direction = True
-                elif event.key == pygame.K_DOWN and direction != "U":
+                elif (event.key == pygame.K_DOWN or event.key == pygame.K_s) and direction != "U":
                     direction = "D"
                     lock_direction = True
-                elif event.key == pygame.K_LEFT and direction != "R":
+                elif (event.key == pygame.K_LEFT or event.key == pygame.K_a) and direction != "R":
                     direction = "L"
                     lock_direction = True
-                elif event.key == pygame.K_RIGHT and direction != "L":
+                elif (event.key == pygame.K_RIGHT or event.key == pygame.K_d) and direction != "L":
                     direction = "R"
                     lock_direction = True
         if speed_limiter > 0:
@@ -255,6 +255,7 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     main()
+                    quit_game = True
                 elif event.key == pygame.K_ESCAPE:
                     quit_game = True
 
